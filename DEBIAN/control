@@ -1,0 +1,12 @@
+Package: lite-checksum
+Version: 2.0-0000-linuxlite
+Architecture: all
+Priority: optional
+Section: base
+Installed-Size: 8
+Depends: yad, zenity, xclip
+Homepage: https://unlockforus.com
+Maintainer: Ralphy Rhdez <rafaelrhd3z@gmail.com>
+Description: GUI tool to calculate Hash algorithm
+ A GUI tool to easily calculate MD5, SHA-1, SHA-224, SHA-256,
+ SHA-348, SHA-512 files hashes in Linux Lite / Ubuntu based systems.

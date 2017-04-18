@@ -1,0 +1,56 @@
+#!/bin/bash
+# Checksum for Ubuntu based systems.
+# Dependencies - yad, zenity, xclip, md5sum
+# Copyright 2017 © Ralphy Rhdez <rafaelrhd3z@gmail.com>
+# Website - https://unlockforus.com
+# Dated - 18th April, 2017
+
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License with your
+# system, in /usr/share/common-licenses/GPL-2.  If not, see
+# <http://www.gnu.org/licenses/>.
+
+# app icon
+_ICON="/usr/share/pixmaps/checksum.png"
+if [ -f "${THEME:1:-1}system-run" ]; then _RUN_ICON="${THEME:1:-1}system-run"; else _RUN_ICON="/usr/share/icons/Faenza/actions/scalable/system-run.svg"; fi
+# use user icon theme if available
+THEME=$(xfconf-query -c xsettings -p /Net/IconThemeName)
+_APPNAME="Checksum"
+# user selected file
+file="$@"
+if [ -z "$@" ]; then szPath=$(yad --file-selection --width=680 --height=480 --window-icon=$_ICON --title="Checksum - Select file..." \
+                                  --filename="$HOME/Desktop/" --file-filter='Image files (ISO,IMG) | *.iso *.ISO *.img *.IMG' --file-filter='All files | *');
+if [[ "$?" -eq "1" || "$?" -eq "252" ]]; then exit 0; else file="$szPath"; fi; fi
+
+MD5=(`echo "" | awk '{print "md5sum","✍","MD5", $0}'`); SHA1=(`echo "" | awk '{print "sha1sum","✍","SHA-1", $0}'`)
+SHA224=(`echo "" | awk '{print "sha224sum","✍","SHA-224", $0}'`); SHA256=(`echo "" | awk '{print "sha256sum","✍","SHA-256", $0}'`)
+SHA384=(`echo "" | awk '{print "sha384sum","✍","SHA-384", $0}'`); SHA512=(`echo "" | awk '{print "sha512sum","✍","SHA-512", $0}'`)
+# main dialog
+selected=$(yad --image=/usr/share/pixmaps/checksum.png --image-on-top --list --borders=5 --height=268 --fixed --window-icon=$_ICON --title="$_APPNAME" \
+               --text="\nFile:  <b>${file##*/}</b>\n\nSelect the Hash algorithm          \n" --hide-column=1 --no-headers --separator="," --print-column=1 \
+               --column=Checksum --column=" " --column=Hash "${MD5[@]}" "${SHA1[@]}" "${SHA224[@]}" "${SHA256[@]}" "${SHA384[@]}" "${SHA512[@]}")
+# If Quit is clicked then exit
+if [[ "$?" -eq "1" || "$?" -eq "252" ]]; then exit 0; fi
+# read selection
+checksum=$(awk -F, '{print $1}' <<<$selected)
+dialog=($checksum)
+# temp sum file
+_TMPF="/tmp/sum"
+# common function - if cancel then remove $_TMPF and exit
+action_cancel() { if [ "${PIPESTATUS[2]}" -ne "0" ]; then rm $_TMPF; exit 0 ; fi }
+action_sum() { sum=`cat $_TMPF`; yad --info --window-icon=$_ICON --image=/usr/share/pixmaps/checksum.png --image-on-top --button="Copy to clipboard"!gtk-copy:1 \
+                                     --button="Close"!gtk-close:0 --borders=5 --fixed --title="$_APPNAME - $dialog" --text="\nFile:<b> ${file##*/} </b>\n\n$dialog: $sum  \n"
+if [ $? -eq 0 ]; then rm -f $_TMPF; exit 0 ; else echo ${sum} | xclip -selection c; rm -f $_TMPF; exit 0 ; fi }
+
+"$checksum" "$file" | tee >(cut -d ' ' -f1 > $_TMPF) | zenity --window-icon="info" --window-icon="$_RUN_ICON" --width="300" --progress --title="Calculating $dialog" \
+                                                              --text="File:<b> ${file##*/} </b>\n\n- Calculating $dialog... please wait..." --pulsate --auto-close --no-cancel
+action_cancel
+action_sum
+exit

@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+chown root:root /usr/bin/checksum
+chown root:root /usr/share/applications/checksum.desktop
+chown root:root /usr/share/pixmaps/checksum.png
+chmod 755 /usr/bin/checksum
+chmod 644 /usr/share/applications/checksum.desktop
+chmod 644 /usr/share/pixmaps/checksum.png
+
+# Thunar Custom Action
+_MYUSER=$(sudo -u ${SUDO_USER:-$USER} whoami)
+_UCA="/home/$_MYUSER/.config/Thunar/uca.xml"
+if [ -f "$_UCA" ]; then
+if grep -q -F '<name>Checksum</name>' $_UCA; then :; else # add custom action
+sed -i '/<\/actions>/i \
+<action>\
+	<icon>/usr/share/pixmaps/checksum.png</icon>\
+	<name>Checksum</name>\
+	<command>checksum %f</command>\
+	<description>Calculate checksum</description>\
+	<patterns>*</patterns>\
+	<audio-files/>\
+	<image-files/>\
+	<other-files/>\
+	<text-files/>\
+	<video-files/>\
+</action>' $_UCA; fi
+else :; fi

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Checksum
+Comment=Get Files MD5, SHA-1, SHA-224, SHA-256, SHA-348, SHA-512
+Categories=GNOME;GTK;Settings;X-GNOME-Settings-Panel;X-GNOME-PersonalSettings;DesktopSettings;X-XFCE;
+Exec=checksum
+Icon=/usr/share/pixmaps/checksum.png
+Terminal=false
+Type=Application
